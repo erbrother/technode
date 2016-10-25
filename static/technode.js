@@ -1,4 +1,14 @@
-angular.module('technodeApp',[])
+angular.module('technodeApp',['ngRoute']).run(function($window, $rootScope, $http, $location) {
+	$http({
+		url: '/api/validate',
+		method: 'GET'
+	}).success(function(user) {
+		$rootScope.me = user
+		$location.path('/')
+	}).error(function(data) {
+		$location.path('login')
+	})
+})
 
 angular.module('technodeApp').factory('socket', function($rootScope) {
 	var socket = io.connect('/')
@@ -96,4 +106,20 @@ angular.module('technodeApp').directive('ctrlEnterBreakLine', function() {
 			}
 		});
 	}
+})
+
+// 路由
+angular.module('technodeApp').config(function($routeProvider, $locationProvider) {
+	$locationProvider.html5Mode(true)
+	$routeProvider.when('/', {
+		templateUrl: '/pages/room.html',
+		controller: 'RoomCtrl'
+	})
+	.when('/login', {
+		templateUrl: '/pages/login.html',
+		controller: 'LoginCtrl'		
+	})
+	.otherwise({
+		redirectTo: '/login'
+	})
 })
