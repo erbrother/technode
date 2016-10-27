@@ -18,8 +18,16 @@ exports.findByEmailOrCreate = function(email, callback) {
 			user = new db.User
 			user.name = email.split('@')[0]
 			user.email = email
-			user.avatarUrl = gravtar.url(email)
+			user.avatarUrl = gravatar.url(email)
 			user.save(callback)
 		}
 	})
+}
+
+exports.online = function(_userId, callback) {
+	db.User.findOneAndUpdate({_id: _userId}, {$set: {online: true}} ,callback)
+}
+
+exports.offline = function(_userId, callback) {
+	db.User.findOneAndUpdate({_id: _userId}, {$set: {online: false}} ,callback)
 }

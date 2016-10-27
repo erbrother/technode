@@ -3,10 +3,25 @@ angular.module('technodeApp',['ngRoute']).run(function($window, $rootScope, $htt
 		url: '/api/validate',
 		method: 'GET'
 	}).success(function(user) {
+
 		$rootScope.me = user
 		$location.path('/')
 	}).error(function(data) {
-		$location.path('login')
+		$location.path('/login')
+	});
+
+	$rootScope.logout = function() {
+		$http({
+			url: '/api/logout',
+			method: 'GET'
+		}).success(function() {
+			$rootScope.me = null
+			$location.path('/login')
+		})
+	};
+
+	$rootScope.$on('login', function(evt, me) {
+		$rootScope.me = me
 	})
 })
 
@@ -44,9 +59,15 @@ angular.module('technodeApp').controller('RoomCtrl', function($scope, socket) {
 		$scope.messages = messages;
 	});
 
+	socket.on('roomData', function(room) {
+		$scope.room = room
+	})
+
 	socket.on('messageAdded', function(message) {
-		$scope.messages.push(message)
-	});	
+		$scope.technode.messages.push(message)
+	})
+
+	socket.emit('getRoom')
 })
 
 angular.module('technodeApp').controller('MessageCreatorCtrl', function($scope, socket) {
@@ -57,10 +78,31 @@ angular.module('technodeApp').controller('MessageCreatorCtrl', function($scope, 
 			return
 		}
 
-		socket.emit('createMessages', $scope.newMessage);
+		socket.emit('createMessages', {
+			message: $scope.newMessage,
+			creator: $scope.me
+		});
 		
 		$scope.newMessage = '';
 	};
+})
+
+angular.module('technodeApp').controller('LoginCtrl', function($scope, $http, $location) {
+	$scope.login = function () {
+		
+		$http({
+			url: '/api/login',
+			method: 'POST',
+			data: {
+				email: $scope.email
+			}
+		}).success(function(user) {
+			$scope.$emit('login', user)
+			$location.path('/')
+		}).error(function() {
+			$location.path('/login')
+		})
+	}	
 })
  
 // 指令 
